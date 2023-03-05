@@ -1,0 +1,8 @@
+sn-export-folder
+sn-export-folder.exe
+.idea/
+vendor
+*.out
+.vscode/
+bin/
+exported/
