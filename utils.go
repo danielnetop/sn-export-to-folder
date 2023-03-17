@@ -116,8 +116,12 @@ func getFilePath(tags map[string]Tag, tag Tag) string {
 	return filepath.Join(getFilePath(tags, tags[tag.Parent]), sanitizeName(tag.Name))
 }
 
-func getExportedFilePath(tags map[string]Tag, tag Tag) string {
-	return filepath.Join(exportDir, getFilePath(tags, tag))
+func getExportedFilePath(tags map[string]Tag, tag *Tag) string {
+	if tag == nil {
+		return exportDir
+	}
+
+	return filepath.Join(exportDir, getFilePath(tags, *tag))
 }
 
 func replaceFirstRune(str, replacement string) string {
@@ -182,7 +186,8 @@ func checkIfPathExistsAndRename(filepath string, extraPath string) string {
 
 func createTagFolders(tags map[string]Tag) error {
 	for _, tag := range tags {
-		path := getExportedFilePath(tags, tag)
+		tag := tag
+		path := getExportedFilePath(tags, &tag)
 
 		err := createFolders(path)
 		if err != nil {
@@ -206,9 +211,13 @@ func createNotes(notes map[string]Note, tags map[string]Tag, noteTags map[string
 	for _, note := range notes {
 		noteTags := noteTags[note.UUID]
 
+		printDuplicatesHeader(noteTags, note)
+
 		for _, noteTag := range noteTags {
-			notePath := filepath.Join(getExportedFilePath(tags, tags[noteTag]), note.Title)
-			notePath = checkIfPathExistsAndRename(notePath, note.UUID) + fileExtension
+			tag := tags[noteTag]
+			notePath := getFinalNotePath(tags, &tag, note)
+
+			printDuplicatePaths(noteTags, notePath)
 
 			err := createNoteAndUpdateTimes(note, notePath)
 			if err != nil {
@@ -217,9 +226,7 @@ func createNotes(notes map[string]Note, tags map[string]Tag, noteTags map[string
 		}
 
 		if len(noteTags) == 0 {
-			notePath := filepath.Join(exportDir, checkIfPathExistsAndRename(note.Title, note.UUID)) + fileExtension
-
-			err := createNoteAndUpdateTimes(note, notePath)
+			err := createNoteAndUpdateTimes(note, getFinalNotePath(tags, nil, note))
 			if err != nil {
 				return err
 			}
@@ -227,6 +234,24 @@ func createNotes(notes map[string]Note, tags map[string]Tag, noteTags map[string
 	}
 
 	return nil
+}
+
+func getFinalNotePath(tags map[string]Tag, tag *Tag, note Note) string {
+	notePath := filepath.Join(getExportedFilePath(tags, tag), note.Title)
+	return checkIfPathExistsAndRename(notePath, note.UUID) + fileExtension
+}
+
+func printDuplicatesHeader(noteTags []string, note Note) {
+	if len(noteTags) > 1 {
+		fmt.Printf("Note \"%s\":%s is duplicated\n", note.Title, note.UUID)
+		fmt.Printf("\tDuplicate paths:\n")
+	}
+}
+
+func printDuplicatePaths(noteTags []string, notePath string) {
+	if len(noteTags) > 1 {
+		fmt.Printf("\t\t%s\n", notePath)
+	}
 }
 
 func createNote(note Note, notePath string) error {

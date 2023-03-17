@@ -533,30 +533,40 @@ func Test_getFilePath(t *testing.T) {
 	}
 }
 
+func tagPointer(tag Tag) *Tag {
+	return &tag
+}
+
 func Test_getExportedFilePath(t *testing.T) {
 	tests := []struct {
 		name string
 		tags map[string]Tag
-		tag  Tag
+		tag  *Tag
 		want string
 	}{
 		{
 			name: "Return filepath of tag",
 			tags: standardNotesBackupAndImportTags,
-			tag:  standardNotesBackupAndImportTags["50be64a8-cf6d-4bec-aa17-b2094a8c7b3b"],
+			tag:  tagPointer(standardNotesBackupAndImportTags["50be64a8-cf6d-4bec-aa17-b2094a8c7b3b"]),
 			want: filepath.Join(exportDir, "Tag 1"),
 		},
 		{
 			name: "Return filepath of tag with child",
 			tags: standardNotesBackupAndImportTags,
-			tag:  standardNotesBackupAndImportTags["8842ba70-428b-42d8-b523-5e0b6983ceec"],
-			want: filepath.Join(exportDir, filepath.Join("Tag 1", "SubTag of Tag 1")),
+			tag:  tagPointer(standardNotesBackupAndImportTags["8842ba70-428b-42d8-b523-5e0b6983ceec"]),
+			want: filepath.Join(exportDir, "Tag 1", "SubTag of Tag 1"),
 		},
 		{
 			name: "Return filepath of tag with special characters",
 			tags: standardNotesBackupAndImportTags,
-			tag:  standardNotesBackupAndImportTags["9306fc4e-91fe-467f-b4b2-bbacd7bdef31"],
+			tag:  tagPointer(standardNotesBackupAndImportTags["9306fc4e-91fe-467f-b4b2-bbacd7bdef31"]),
 			want: filepath.Join(exportDir, "--------- weird title"),
+		},
+		{
+			name: "Return only exportDir if tag is nil",
+			tags: standardNotesBackupAndImportTags,
+			tag:  nil,
+			want: exportDir,
 		},
 	}
 	for _, tt := range tests {
@@ -796,7 +806,8 @@ func Test_createTagFolders(t *testing.T) {
 			assert.ErrorIs(t, tt.err, createTagFolders(tt.tags))
 			if tt.validatePath {
 				for _, tag := range tt.tags {
-					assert.True(t, pathExists(getExportedFilePath(tt.tags, tag)))
+					tag := tag
+					assert.True(t, pathExists(getExportedFilePath(tt.tags, &tag)))
 				}
 			}
 
@@ -849,6 +860,55 @@ func Test_createNotes(t *testing.T) {
 			assert.ErrorIs(t, tt.err, createNotes(tt.notes, tt.tags, tt.noteTags))
 
 			require.NoError(t, os.RemoveAll(exportDir))
+		})
+	}
+}
+
+func Test_getFinalNotePath(t *testing.T) {
+	testNote := Note{
+		UUID:  "fcea99a9-ac85-4f3b-8b83-fa4e70440479",
+		Title: "Title of Note",
+	}
+	tests := []struct {
+		name string
+		tags map[string]Tag
+		tag  *Tag
+		note Note
+		want string
+	}{
+		{
+			name: "Return full path of tagged note with extension",
+			tags: standardNotesBackupAndImportTags,
+			tag:  tagPointer(standardNotesBackupAndImportTags["50be64a8-cf6d-4bec-aa17-b2094a8c7b3b"]),
+			note: testNote,
+			want: filepath.Join(exportDir, "Tag 1", testNote.Title+fileExtension),
+		},
+		{
+			name: "Return full path of note with a tag and subtag with extension",
+			tags: standardNotesBackupAndImportTags,
+			tag:  tagPointer(standardNotesBackupAndImportTags["8842ba70-428b-42d8-b523-5e0b6983ceec"]),
+			note: testNote,
+			want: filepath.Join(exportDir, "Tag 1", "SubTag of Tag 1", testNote.Title+fileExtension),
+		},
+		{
+			name: "Return filepath of note with extension tagged with a tag that has special characters",
+			tags: standardNotesBackupAndImportTags,
+			tag:  tagPointer(standardNotesBackupAndImportTags["9306fc4e-91fe-467f-b4b2-bbacd7bdef31"]),
+			note: testNote,
+			want: filepath.Join(exportDir, "--------- weird title", testNote.Title+fileExtension),
+		},
+		{
+			name: "Return filepath of note in exportDir",
+			tags: standardNotesBackupAndImportTags,
+			tag:  nil,
+			note: testNote,
+			want: filepath.Join(exportDir, testNote.Title+fileExtension),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, getFinalNotePath(tt.tags, tt.tag, tt.note))
 		})
 	}
 }
