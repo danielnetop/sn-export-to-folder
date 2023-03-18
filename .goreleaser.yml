@@ -3,7 +3,7 @@ project_name: sn-export-folder
 
 release:
   github:
-    owner: DanielNetoP
+    owner: danielnetop
     name: sn-export-to-folder
 
 builds:
