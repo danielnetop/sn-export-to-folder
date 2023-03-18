@@ -146,7 +146,7 @@ func sanitizeName(filename string) string {
 	filename = strings.ReplaceAll(filename, "?", "-")
 	filename = strings.ReplaceAll(filename, "*", "-")
 
-	if (string(filename[0])) == "." {
+	if len(filename) > 0 && (string(filename[0])) == "." {
 		filename = replaceFirstRune(filename, "-")
 	}
 
