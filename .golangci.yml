@@ -1,6 +1,6 @@
 linters-settings:
   goimports:
-    local-prefixes: github.com/DanielNetoP/superToMarkdown
+    local-prefixes: github.com/danielnetop/sn-export-to-folder
   dupl:
     threshold: 100
   errcheck:

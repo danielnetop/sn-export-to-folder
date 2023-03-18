@@ -1,4 +1,4 @@
-module github.com/DanielNetoP/sn-export-to-folder
+module github.com/danielnetop/sn-export-to-folder
 
 go 1.20
 

@@ -7,7 +7,7 @@ After the tool runs the tags will be folders and each note will be inside the re
 
 Download a decrypted backup of your Standard Notes account and extract the `zip` and locate the decrypted backup file, it's named `Standard Notes Backup and Import File.txt`
 
-- Download the latest release for your platform [here](https://github.com/DanielNetoP/sn-export-to-folder/releases).
+- Download the latest release for your platform [here](https://github.com/danielnetop/sn-export-to-folder/releases).
 - Extract the file downloadable file.
 - Run the CLI tool
   - Windows
@@ -46,6 +46,6 @@ Close the terminal window and follow the steps on [Usage](#usage).
 
 ## Badges
 
-![Build Status](https://github.com/DanielNetoP/sn-export-to-folder/workflows/Test/badge.svg)
-[![License](https://img.shields.io/github/license/DanielNetoP/sn-export-to-folder)](/LICENSE)
-[![Release](https://img.shields.io/github/release/DanielNetoP/sn-export-to-folder.svg)](https://github.com/DanielNetoP/sn-export-to-folder/releases/latest)
+![Build Status](https://github.com/danielnetop/sn-export-to-folder/workflows/Test/badge.svg)
+[![License](https://img.shields.io/github/license/danielnetop/sn-export-to-folder)](/LICENSE)
+[![Release](https://img.shields.io/github/release/danielnetop/sn-export-to-folder.svg)](https://github.com/danielnetop/sn-export-to-folder/releases/latest)
