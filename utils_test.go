@@ -635,6 +635,11 @@ func Test_sanitizeName(t *testing.T) {
 			filename: "   .Dot   ",
 			want:     "-Dot",
 		},
+		{
+			name:     "return empty if string is empty",
+			filename: "      ",
+			want:     "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

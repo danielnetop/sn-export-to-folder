@@ -85,10 +85,8 @@ func parseTags(item Item, tags map[string]Tag, noteTags map[string][]string) {
 		}
 	}
 
-	tagName := nameOrUUID(item.Content.Title, item.UUID)
-
 	tags[item.UUID] = Tag{
-		Name:   tagName,
+		Name:   nameOrUUID(item.Content.Title, item.UUID),
 		Parent: parent,
 	}
 }
@@ -136,6 +134,14 @@ func replaceFirstRune(str, replacement string) string {
 
 func sanitizeName(filename string) string {
 	filename = strings.TrimSpace(filename)
+
+	// If the following condition is true then both Name and item UUID are empty
+	// I don't think that should happen on a valid export file
+	// might need to update the nameOrUUID
+	if len(filename) == 0 {
+		return filename
+	}
+
 	filename = strings.ReplaceAll(filename, "<", "-")
 	filename = strings.ReplaceAll(filename, ">", "-")
 	filename = strings.ReplaceAll(filename, ":", "-")
@@ -146,7 +152,7 @@ func sanitizeName(filename string) string {
 	filename = strings.ReplaceAll(filename, "?", "-")
 	filename = strings.ReplaceAll(filename, "*", "-")
 
-	if (string(filename[0])) == "." {
+	if string(filename[0]) == "." {
 		filename = replaceFirstRune(filename, "-")
 	}
 
