@@ -160,8 +160,8 @@ func sanitizeName(filename string) string {
 	return filename
 }
 
-func updateTimes(path string, updatedAt time.Time, createdAt time.Time) error {
-	err := os.Chtimes(path, updatedAt, createdAt)
+func updateTimes(path string, createdAt time.Time) error {
+	err := os.Chtimes(path, createdAt, createdAt)
 	if err != nil {
 		return errUpdatingTimes
 	}
@@ -295,7 +295,7 @@ func createNoteAndUpdateTimes(note Note, notePath string) error {
 		return fmt.Errorf("%w - \"%s\"", err, note.Title)
 	}
 
-	err = updateTimes(notePath, note.UpdatedAt, note.CreatedAt)
+	err = updateTimes(notePath, note.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("%w - \"%s\"", err, notePath)
 	}

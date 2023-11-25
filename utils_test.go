@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/djherbis/times"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -703,14 +702,13 @@ func Test_updateTimes(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			assert.ErrorIs(t, tt.err, updateTimes(tt.path, tt.updatedAt, tt.createdAt))
+			assert.ErrorIs(t, tt.err, updateTimes(tt.path, tt.createdAt))
 
 			if tt.err == nil {
-				fileInfo, err := times.Stat(tt.path)
+				fileInfo, err := os.Stat(tt.path)
 				require.NoError(t, err)
 
-				assert.Equal(t, tt.updatedAt.UnixMilli(), fileInfo.AccessTime().UnixMilli())
-				assert.Equal(t, tt.createdAt.UnixMilli(), fileInfo.BirthTime().UnixMilli())
+				assert.True(t, tt.createdAt.Equal(fileInfo.ModTime()))
 				assert.NotEqual(t, fileInfoBeforeUpdate, fileInfo.ModTime())
 			}
 		})
