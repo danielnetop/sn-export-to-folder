@@ -58,4 +58,5 @@ type Note struct {
 	Title     string
 	Content   string
 	UpdatedAt time.Time
+	CreatedAt time.Time
 }
