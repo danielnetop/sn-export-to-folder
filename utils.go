@@ -184,7 +184,7 @@ func pathExists(path string) bool {
 }
 
 func checkIfPathExistsAndRename(filepath string, extraPath string) string {
-	if pathExists(filepath) {
+	if pathExists(filepath + fileExtension) {
 		return checkIfPathExistsAndRename(filepath+"-"+extraPath, strconv.FormatInt(time.Now().Unix(), 10))
 	}
 

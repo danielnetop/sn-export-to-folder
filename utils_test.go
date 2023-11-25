@@ -789,9 +789,9 @@ func Test_checkIfPathExistsAndRename(t *testing.T) {
 		},
 		{
 			name:      "path exists",
-			filepath:  "utils_test.go",
+			filepath:  "README",
 			extraPath: "extra_path",
-			want:      "utils_test.go-extra_path",
+			want:      "README-extra_path",
 		},
 	}
 	for _, tt := range tests {
