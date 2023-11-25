@@ -103,6 +103,7 @@ func parseNotes(item Item, notes map[string]Note) {
 		Title:     sanitizeName(nameOrUUID(item.Content.Title, item.UUID)),
 		Content:   item.Content.Text,
 		UpdatedAt: item.UpdatedAt,
+		CreatedAt: item.CreatedAt,
 	}
 }
 
@@ -159,8 +160,8 @@ func sanitizeName(filename string) string {
 	return filename
 }
 
-func updateTimes(path string, updatedAt time.Time) error {
-	err := os.Chtimes(path, updatedAt, updatedAt)
+func updateTimes(path string, updatedAt time.Time, createdAt time.Time) error {
+	err := os.Chtimes(path, updatedAt, createdAt)
 	if err != nil {
 		return errUpdatingTimes
 	}
@@ -294,7 +295,7 @@ func createNoteAndUpdateTimes(note Note, notePath string) error {
 		return fmt.Errorf("%w - \"%s\"", err, note.Title)
 	}
 
-	err = updateTimes(notePath, note.UpdatedAt)
+	err = updateTimes(notePath, note.UpdatedAt, note.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("%w - \"%s\"", err, notePath)
 	}

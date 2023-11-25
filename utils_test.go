@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/djherbis/times"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -317,48 +318,56 @@ var (
 			Title:     "New note on weird tag name",
 			Content:   "This is the content of said tag",
 			UpdatedAt: time.Date(2023, 3, 4, 11, 35, 4, 297000000, time.UTC),
+			CreatedAt: time.Date(2023, 2, 25, 14, 42, 52, 736000000, time.UTC),
 		},
 		"23f8a1e5-3bcd-4431-9b78-ffb156b149ce": {
 			UUID:      "23f8a1e5-3bcd-4431-9b78-ffb156b149ce",
 			Title:     "23f8a1e5-3bcd-4431-9b78-ffb156b149ce",
 			Content:   "Note without a title",
 			UpdatedAt: time.Date(2023, 2, 21, 1, 18, 21, 512000000, time.UTC),
+			CreatedAt: time.Date(2023, 02, 21, 01, 18, 12, 272000000, time.UTC),
 		},
 		"7a7d1f9d-b392-4473-a79f-1d85cd1b28d5": {
 			UUID:      "7a7d1f9d-b392-4473-a79f-1d85cd1b28d5",
 			Title:     "Sunday, Feb 19, 2023 at 9-25 PM",
 			Content:   "just another new note",
 			UpdatedAt: time.Date(2023, 2, 19, 21, 25, 58, 484000000, time.UTC),
+			CreatedAt: time.Date(2023, 2, 19, 21, 25, 54, 753000000, time.UTC),
 		},
 		"e48301a9-156e-4094-8244-de1718921435": {
 			UUID:      "e48301a9-156e-4094-8244-de1718921435",
 			Title:     "Sunday, Feb 19, 2023 at 9-25 PM",
 			Content:   "new note for testing purposes",
 			UpdatedAt: time.Date(2023, 02, 19, 21, 25, 52, 906000000, time.UTC),
+			CreatedAt: time.Date(2023, 02, 19, 21, 25, 46, 958000000, time.UTC),
 		},
 		"ed09f0be-cb1f-4ef2-8c5f-5f996f8907e0": {
 			UUID:      "ed09f0be-cb1f-4ef2-8c5f-5f996f8907e0",
 			Title:     "Note with random text",
 			Content:   "# asdasd\n",
 			UpdatedAt: time.Date(2023, 3, 4, 11, 36, 55, 2000000, time.UTC),
+			CreatedAt: time.Date(2023, 03, 03, 17, 39, 38, 206000000, time.UTC),
 		},
 		"bd61c08e-825c-4430-861e-026406695d6f": {
 			UUID:      "bd61c08e-825c-4430-861e-026406695d6f",
 			Title:     "Note that belongs to Tag 1 and Tag 2",
 			Content:   "",
 			UpdatedAt: time.Date(2023, 3, 4, 11, 37, 06, 899000000, time.UTC),
+			CreatedAt: time.Date(2023, 03, 04, 11, 36, 57, 592000000, time.UTC),
 		},
 		"d577853e-0c84-470e-9d49-4d518ad37488": {
 			UUID:      "d577853e-0c84-470e-9d49-4d518ad37488",
 			Title:     "Note of subtag",
 			Content:   "A note of the children of tag `1 SubTag of Tag 1`",
 			UpdatedAt: time.Date(2023, 03, 04, 11, 54, 13, 357000000, time.UTC),
+			CreatedAt: time.Date(2023, 03, 04, 11, 53, 42, 958000000, time.UTC),
 		},
 		"2e9f7cfb-3001-4e56-bdc4-82656f6f747c": {
 			UUID:      "2e9f7cfb-3001-4e56-bdc4-82656f6f747c",
 			Title:     "A note without tags",
 			Content:   "A note without tags",
 			UpdatedAt: time.Date(2023, 03, 04, 14, 54, 49, 958000000, time.UTC),
+			CreatedAt: time.Date(2023, 03, 04, 14, 54, 44, 935000000, time.UTC),
 		},
 	}
 	standardNotesBackupAndImportNoteTags = map[string][]string{
@@ -665,18 +674,21 @@ func Test_updateTimes(t *testing.T) {
 		name      string
 		path      string
 		updatedAt time.Time
+		createdAt time.Time
 		err       error
 	}{
 		{
 			name:      "No file exists",
 			path:      "invalid_path_just_for_testing_purposes.go",
 			updatedAt: time.Now(),
+			createdAt: time.Now(),
 			err:       errUpdatingTimes,
 		},
 		{
 			name:      "Update time of file",
 			path:      notePath,
 			updatedAt: time.Now().Add(10 * time.Second),
+			createdAt: time.Now(),
 			err:       nil,
 		},
 	}
@@ -691,13 +703,14 @@ func Test_updateTimes(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			assert.ErrorIs(t, tt.err, updateTimes(tt.path, tt.updatedAt))
+			assert.ErrorIs(t, tt.err, updateTimes(tt.path, tt.updatedAt, tt.createdAt))
 
 			if tt.err == nil {
-				fileInfo, err := os.Stat(tt.path)
+				fileInfo, err := times.Stat(tt.path)
 				require.NoError(t, err)
 
-				assert.True(t, tt.updatedAt.Equal(fileInfo.ModTime()))
+				assert.Equal(t, tt.updatedAt.UnixMilli(), fileInfo.AccessTime().UnixMilli())
+				assert.Equal(t, tt.createdAt.UnixMilli(), fileInfo.BirthTime().UnixMilli())
 				assert.NotEqual(t, fileInfoBeforeUpdate, fileInfo.ModTime())
 			}
 		})
@@ -800,6 +813,12 @@ func Test_createTagFolders(t *testing.T) {
 		{
 			name:         "Successfully create folders for tags",
 			tags:         standardNotesBackupAndImportTags,
+			err:          nil,
+			validatePath: true,
+		},
+		{
+			name:         "Successfully create exported folder",
+			tags:         make(map[string]Tag),
 			err:          nil,
 			validatePath: true,
 		},
