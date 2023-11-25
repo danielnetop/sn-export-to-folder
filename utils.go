@@ -191,6 +191,15 @@ func checkIfPathExistsAndRename(filepath string, extraPath string) string {
 }
 
 func createTagFolders(tags map[string]Tag) error {
+	if len(tags) == 0 {
+		err := createFolders(getExportedFilePath(nil, nil))
+		if err != nil {
+			return fmt.Errorf("%w \"%s\"", errCreatingFolder, exportDir)
+		}
+
+		return nil
+	}
+
 	for _, tag := range tags {
 		tag := tag
 		path := getExportedFilePath(tags, &tag)
