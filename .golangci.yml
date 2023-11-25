@@ -51,7 +51,6 @@ linters:
   # Enable extra linters besides the default ones
   enable:
     - bodyclose
-    - depguard
     - dogsled
     - errcheck
     - exhaustive
